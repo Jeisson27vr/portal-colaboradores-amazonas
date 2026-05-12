@@ -174,7 +174,7 @@ except:
     st.error("No se pudo conectar con la base de datos.")
     st.stop()
 
-cedula_user = st.text_input("Ingresa tu Cédula Institucional:", max_chars=10)
+cedula_user = st.text_input("Ingresa tu número de Cédula :", max_chars=10)
 
 if st.button("Generar Código QR de Referido", use_container_width=True):
     if cedula_user:
