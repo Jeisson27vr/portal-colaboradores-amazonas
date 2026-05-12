@@ -1,4 +1,4 @@
-import streamlit as st
+﻿import streamlit as st
 import pandas as pd
 import qrcode
 from PIL import Image, ImageDraw, ImageFont, ImageOps
@@ -51,7 +51,8 @@ def generar_tarjeta_banner(data_colaborador, url_qr):
 
     if os.path.exists(ruta_assets):
         imagenes_banner = [f for f in os.listdir(ruta_assets) if
-                           f.lower().endswith(('.png', '.jpg', '.jpeg')) and f.lower() not in ['logo_fondo.png', 'arial.ttf']]
+                           f.lower().endswith(('.png', '.jpg', '.jpeg')) and f.lower() not in ['logo_fondo.png',
+                                                                                               'arial.ttf']]
         if imagenes_banner:
             ruta_banner = os.path.join(ruta_assets, imagenes_banner[0])
             banner_orig = Image.open(ruta_banner).convert("RGBA")
@@ -107,18 +108,20 @@ def generar_tarjeta_banner(data_colaborador, url_qr):
     # 5. POSICIONAR EL QR
     pos_qr_y = alto_banner + margen_superior_qr
     pos_qr_x = (ancho_card - qr_w) // 2
-    draw.rectangle([pos_qr_x - 3, pos_qr_y - 3, pos_qr_x + qr_w + 3, pos_qr_y + qr_h + 3], outline=(230, 230, 230), width=3)
+    draw.rectangle([pos_qr_x - 3, pos_qr_y - 3, pos_qr_x + qr_w + 3, pos_qr_y + qr_h + 3], outline=(230, 230, 230),
+                   width=3)
     card.paste(img_qr, (pos_qr_x, pos_qr_y), img_qr)
 
     # 6. TEXTOS (Ahora buscando la fuente en la carpeta assets)
     ruta_fuente = os.path.join(ruta_assets, 'arial.ttf')
     try:
         # Tamaños corporativos legibles sin ser exagerados
-        font_nombre = ImageFont.truetype(ruta_fuente, 65) 
+        font_nombre = ImageFont.truetype(ruta_fuente, 65)
         font_footer = ImageFont.truetype(ruta_fuente, 40)
     except IOError:
         font_nombre = font_footer = ImageFont.load_default()
-        st.warning("⚠️ Recuerda subir el archivo 'arial.ttf' a la carpeta 'assets' en GitHub para mejorar la tipografía.")
+        st.warning(
+            "⚠️ Recuerda subir el archivo 'arial.ttf' a la carpeta 'assets' en GitHub para mejorar la tipografía.")
 
     nombre = (data_colaborador['nombre'] or "Colaborador").title()
 
@@ -205,12 +208,11 @@ if st.button("Generar Código QR de Referido", use_container_width=True):
                 st.download_button("📥 1. Descargar QR", data=byte_im, file_name=f"Referido_Amazonas_{cedula_clean}.png",
                                    mime="image/png", use_container_width=True)
             with c2:
-                # Texto 100% pre-codificado matemáticamente (Bypass total a los rombos negros)
-                texto_base = "%C2%A1Hola%21%20Te%20invito%20a%20abrir%20tu%20cuenta%20digital%20en%20Banco%20Amazonas.%0A%0A%E2%9C%85%20Es%20r%C3%A1pido%2C%20seguro%20y%20100%25%20digital.%0A%F0%9F%93%B1%20Puedes%20escanear%20la%20imagen%20que%20te%20adjunto%20o%20empezar%20directamente%20desde%20mi%20enlace%20seguro%20aqu%C3%AD%3A%0A%0A"
-                
-                # Unimos el texto pre-codificado con tu URL limpia
-                msg = texto_base + urllib.parse.quote(url_referido)
-                
+                msg = urllib.parse.quote(
+                    f"¡Hola! Te invito a abrir tu cuenta digital en Banco Amazonas.\n\n"
+                    f"✅ Es rápido, seguro y 100% digital.\n"
+                    f"📱 Puedes escanear la imagen que te adjunto o empezar directamente desde mi enlace seguro aquí:\n\n{url_referido}"
+                )
                 st.markdown(
                     f'<a href="https://wa.me/?text={msg}" target="_blank"><button style="width:100%; background-color:#25D366; color:white; border:none; padding:12px; border-radius:10px; cursor:pointer; font-weight:bold;">📲 2. Enviar Link por WhatsApp</button></a>',
                     unsafe_allow_html=True)
