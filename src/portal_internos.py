@@ -186,7 +186,7 @@ if st.button("Generar Código QR de Referido", use_container_width=True):
             nombre_full = extraer_dato_flexible(fila, ['NOMBRE', 'NOMBRES', 'NOMBRE APELLIDO', 'NOMBRES Y APELLIDOS'])
 
             primer_nombre = nombre_full.split()[0] if nombre_full else "Colaborador"
-            st.success(f"¡Hola {primer_nombre}! Tu material ha sido generado con éxito.")
+            st.success(f"¡Hola {primer_nombre}! Tu Código QR ha sido generado con éxito.")
 
             url_referido = f"https://jeisson27vr.github.io/apertura-digital-amazonas/?oficial={cedula_clean}"
 
@@ -208,7 +208,7 @@ if st.button("Generar Código QR de Referido", use_container_width=True):
             with c2:
                 # Texto de WhatsApp optimizado para incluir adjunto manual
                 msg = urllib.parse.quote(
-                    f"¡Hola! Te invito a abrir tu cuenta digital en Banco Amazonas.\n\n"
+                    f"¡Hola! Te invito a abrir tu Neo cuenta digital en Banco Amazonas.\n\n"
                     f"✅ Es rápido, seguro y 100% digital.\n"
                     f"📱 Puedes escanear la imagen que te adjunto o empezar directamente desde mi enlace seguro aquí:\n\n{url_referido}"
                 )
