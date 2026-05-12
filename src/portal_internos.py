@@ -187,7 +187,7 @@ if os.path.exists(ruta_assets):
 
 st.markdown("<h2 style='text-align: center;'>Portal de Referidos Digitales</h2>", unsafe_allow_html=True)
 st.markdown(
-    "<p style='text-align: center;'>Genera tu QR personalizado para invitar a clientes a la Neo Banca Digital.</p>",
+    "<p style='text-align: center;'>Genera tu QR personalizado para invitar a clientes a la Neo Cuenta Digital.</p>",
     unsafe_allow_html=True)
 st.write("---")
 
