@@ -187,7 +187,7 @@ if os.path.exists(ruta_assets):
 
 st.markdown("<h2 style='text-align: center;'>Portal de Referidos Digitales</h2>", unsafe_allow_html=True)
 st.markdown(
-    "<p style='text-align: center;'>Genera tu material personalizado para invitar a clientes a la Banca Digital.</p>",
+    "<p style='text-align: center;'>Genera tu QR personalizado para invitar a clientes a la Neo Banca Digital.</p>",
     unsafe_allow_html=True)
 st.write("---")
 
@@ -216,10 +216,10 @@ if st.button("Generar Código QR de Referido", use_container_width=True):
                                                     ['NOMBRE', 'NOMBRES', 'NOMBRE APELLIDO', 'NOMBRES Y APELLIDOS'])
                 primer_nombre = nombre_full.split()[0] if nombre_full else "Colaborador"
 
-                st.success(f"¡Hola {primer_nombre}! Tu material ha sido generado con éxito.")
+                st.success(f"¡Hola {primer_nombre}! Tu Código QR ha sido generado con éxito.")
                 url_referido = f"https://jeisson27vr.github.io/apertura-digital-amazonas/?oficial={cedula_clean}"
 
-                with st.spinner("Diseñando material de alta resolución..."):
+                with st.spinner("Diseñando QR de alta resolución..."):
                     img_tarjeta = generar_tarjeta_banner({'nombre': nombre_full, 'cedula': cedula_clean}, url_referido)
 
                 buf = io.BytesIO()
