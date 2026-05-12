@@ -44,14 +44,14 @@ def generar_tarjeta_banner(data_colaborador, url_qr):
     color_amazonas = (211, 47, 47)
     color_texto_principal = (30, 30, 30)
 
-    # 1. CARGAMOS Y MEDIMOS EL BANNER PRIMERO
+    # 1. CARGAMOS Y MEDIMOS EL BANNER
     ruta_assets = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'assets')
     banner_expandido = None
-    alto_banner = 320  # Altura de respaldo
+    alto_banner = 320
 
     if os.path.exists(ruta_assets):
         imagenes_banner = [f for f in os.listdir(ruta_assets) if
-                           f.lower().endswith(('.png', '.jpg', '.jpeg')) and f.lower() != 'logo_fondo.png']
+                           f.lower().endswith(('.png', '.jpg', '.jpeg')) and f.lower() not in ['logo_fondo.png', 'arial.ttf']]
         if imagenes_banner:
             ruta_banner = os.path.join(ruta_assets, imagenes_banner[0])
             banner_orig = Image.open(ruta_banner).convert("RGBA")
@@ -59,26 +59,24 @@ def generar_tarjeta_banner(data_colaborador, url_qr):
             alto_banner = int(ancho_card * ratio)
             banner_expandido = banner_orig.resize((ancho_card, alto_banner), Image.Resampling.LANCZOS)
 
-    # 2. GENERAMOS EL QR Y SACAMOS SU MEDIDA EXACTA
+    # 2. GENERAMOS EL QR
     qr = qrcode.QRCode(version=5, error_correction=qrcode.constants.ERROR_CORRECT_H, box_size=15, border=2)
     qr.add_data(url_qr)
     qr.make(fit=True)
     img_qr = qr.make_image(fill_color="black", back_color="white").convert('RGBA')
-    qr_w, qr_h = img_qr.size  # Tomamos la altura real del QR generado
+    qr_w, qr_h = img_qr.size
 
-    # 3. CÁLCULO DINÁMICO DEL LIENZO
+    # 3. CÁLCULO DEL LIENZO
     margen_superior_qr = 70
-    margen_inferior_qr = 50
-    espacio_textos = 180  # Espacio reservado para Nombre y ID
-    margen_base = 60
+    margen_inferior_qr = 40
+    espacio_textos = 200  # Más espacio para que la letra grande respire
+    margen_base = 50
 
     alto_card = alto_banner + margen_superior_qr + qr_h + margen_inferior_qr + espacio_textos + margen_base
 
-    # Creamos el lienzo con la medida perfecta
     card = Image.new('RGBA', (ancho_card, alto_card), color_fondo)
     draw = ImageDraw.Draw(card)
 
-    # Pegamos el banner
     if banner_expandido:
         card.paste(banner_expandido, (0, 0), banner_expandido)
     else:
@@ -106,19 +104,22 @@ def generar_tarjeta_banner(data_colaborador, url_qr):
         pos_centro_exacto = (qr_w - size_cuadro) // 2
         img_qr.paste(fondo_blanco, (pos_centro_exacto, pos_centro_exacto), fondo_blanco)
 
-    # 5. POSICIONAR EL QR EN LA TARJETA
+    # 5. POSICIONAR EL QR
     pos_qr_y = alto_banner + margen_superior_qr
     pos_qr_x = (ancho_card - qr_w) // 2
-    draw.rectangle([pos_qr_x - 3, pos_qr_y - 3, pos_qr_x + qr_w + 3, pos_qr_y + qr_h + 3], outline=(230, 230, 230),
-                   width=3)
+    draw.rectangle([pos_qr_x - 3, pos_qr_y - 3, pos_qr_x + qr_w + 3, pos_qr_y + qr_h + 3], outline=(230, 230, 230), width=3)
     card.paste(img_qr, (pos_qr_x, pos_qr_y), img_qr)
 
-    # 6. TEXTOS
+    # 6. TEXTOS (Ahora buscando la fuente en la carpeta assets)
+    ruta_fuente = os.path.join(ruta_assets, 'arial.ttf')
     try:
-        font_nombre = ImageFont.truetype("arial.ttf", 55)
-        font_footer = ImageFont.truetype("arial.ttf", 35)
-    except:
+        # Tamaños corporativos legibles sin ser exagerados
+        font_nombre = ImageFont.truetype(ruta_fuente, 65) 
+        font_footer = ImageFont.truetype(ruta_fuente, 40)
+    except IOError:
         font_nombre = font_footer = ImageFont.load_default()
+        # Si ves este warning en tu app, significa que no has subido el arial.ttf a GitHub
+        st.warning("⚠️ Recuerda subir el archivo 'arial.ttf' a la carpeta 'assets' en GitHub para mejorar la tipografía.")
 
     nombre = (data_colaborador['nombre'] or "Colaborador").title()
 
@@ -128,7 +129,7 @@ def generar_tarjeta_banner(data_colaborador, url_qr):
 
     base_textos_y = pos_qr_y + qr_h + margen_inferior_qr
     escribir_centrado(base_textos_y, nombre, font_nombre, color_texto_principal)
-    escribir_centrado(base_textos_y + 80, f"ID Referido: {data_colaborador['cedula']}", font_footer, (160, 160, 160))
+    escribir_centrado(base_textos_y + 80, f"ID Referido: {data_colaborador['cedula']}", font_footer, (150, 150, 150))
 
     # 7. REDONDEADO PERFECTO
     mask = Image.new('L', (ancho_card, alto_card), 0)
@@ -154,7 +155,7 @@ def cargar_inventario():
 ruta_assets = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'assets')
 if os.path.exists(ruta_assets):
     imagenes = [f for f in os.listdir(ruta_assets) if
-                f.lower().endswith(('.png', '.jpg', '.jpeg')) and f.lower() != 'logo_fondo.png']
+                f.lower().endswith(('.png', '.jpg', '.jpeg')) and f.lower() not in ['logo_fondo.png', 'arial.ttf']]
     if imagenes:
         col1, col2, col3 = st.columns([1, 3, 1])
         with col2:
@@ -162,7 +163,7 @@ if os.path.exists(ruta_assets):
 
 st.markdown("<h2 style='text-align: center;'>Portal de Referidos Digitales</h2>", unsafe_allow_html=True)
 st.markdown(
-    "<p style='text-align: center;'>Genera tu código QR personalizado para invitar a clientes a la Banca Digital.</p>",
+    "<p style='text-align: center;'>Genera tu material personalizado para invitar a clientes a la Banca Digital.</p>",
     unsafe_allow_html=True)
 st.write("---")
 
@@ -173,7 +174,7 @@ except:
     st.error("No se pudo conectar con la base de datos.")
     st.stop()
 
-cedula_user = st.text_input("Ingresa tu Numero de Cédula:", max_chars=10)
+cedula_user = st.text_input("Ingresa tu Cédula Institucional:", max_chars=10)
 
 if st.button("Generar Código QR de Referido", use_container_width=True):
     if cedula_user:
@@ -185,9 +186,8 @@ if st.button("Generar Código QR de Referido", use_container_width=True):
             nombre_full = extraer_dato_flexible(fila, ['NOMBRE', 'NOMBRES', 'NOMBRE APELLIDO', 'NOMBRES Y APELLIDOS'])
 
             primer_nombre = nombre_full.split()[0] if nombre_full else "Colaborador"
-            st.success(f"¡Hola {primer_nombre}! Tu código QR ha sido generado con éxito.")
+            st.success(f"¡Hola {primer_nombre}! Tu material ha sido generado con éxito.")
 
-            # AQUÍ SE INYECTÓ TU URL REAL DE GITHUB
             url_referido = f"https://jeisson27vr.github.io/apertura-digital-amazonas/?oficial={cedula_clean}"
 
             with st.spinner("Creando diseño de alta resolución..."):
@@ -203,13 +203,17 @@ if st.button("Generar Código QR de Referido", use_container_width=True):
 
             c1, c2 = st.columns(2)
             with c1:
-                st.download_button("📥 Descargar QR", data=byte_im, file_name=f"Referido_Amazonas_{cedula_clean}.png",
+                st.download_button("📥 1. Descargar QR", data=byte_im, file_name=f"Referido_Amazonas_{cedula_clean}.png",
                                    mime="image/png", use_container_width=True)
             with c2:
+                # Texto de WhatsApp optimizado para incluir adjunto manual
                 msg = urllib.parse.quote(
-                    f"¡Hola! Te invito a abrir tu cuenta digital en Banco Amazonas. Es rápido y seguro. Empieza aquí: {url_referido}")
+                    f"¡Hola! Te invito a abrir tu cuenta digital en Banco Amazonas.\n\n"
+                    f"✅ Es rápido, seguro y 100% digital.\n"
+                    f"📱 Puedes escanear la imagen que te adjunto o empezar directamente desde mi enlace seguro aquí:\n\n{url_referido}"
+                )
                 st.markdown(
-                    f'<a href="https://wa.me/?text={msg}" target="_blank"><button style="width:100%; background-color:#25D366; color:white; border:none; padding:12px; border-radius:10px; cursor:pointer; font-weight:bold;">📲 Enviar por WhatsApp</button></a>',
+                    f'<a href="https://wa.me/?text={msg}" target="_blank"><button style="width:100%; background-color:#25D366; color:white; border:none; padding:12px; border-radius:10px; cursor:pointer; font-weight:bold;">📲 2. Enviar Link por WhatsApp</button></a>',
                     unsafe_allow_html=True)
         else:
             st.error("La cédula ingresada no se encuentra en la base de datos.")
