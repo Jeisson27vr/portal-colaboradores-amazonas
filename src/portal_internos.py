@@ -208,13 +208,24 @@ if st.button("Generar Código QR de Referido", use_container_width=True):
                 st.download_button("📥 1. Descargar QR", data=byte_im, file_name=f"Referido_Amazonas_{cedula_clean}.png",
                                    mime="image/png", use_container_width=True)
             with c2:
-                msg = urllib.parse.quote(
+                # Generamos los emojis desde su código de sistema (Bypass total a los archivos de texto)
+                check_emoji = chr(9989)
+                celular_emoji = chr(128241)
+                
+                # Armamos el mensaje limpio
+                mensaje = (
                     f"¡Hola! Te invito a abrir tu cuenta digital en Banco Amazonas.\n\n"
-                    f"✅ Es rápido, seguro y 100% digital.\n"
-                    f"📱 Puedes escanear la imagen que te adjunto o empezar directamente desde mi enlace seguro aquí:\n\n{url_referido}"
+                    f"{check_emoji} Es rápido, seguro y 100% digital.\n"
+                    f"{celular_emoji} Puedes escanear la imagen que te adjunto o empezar directamente desde mi enlace seguro aquí:\n\n"
+                    f"{url_referido}"
                 )
+                
+                # Empaquetamos todo con la librería oficial y apuntamos a la API directa (No wa.me)
+                parametros_url = urllib.parse.urlencode({'text': mensaje})
+                url_whatsapp = f"https://api.whatsapp.com/send?{parametros_url}"
+                
                 st.markdown(
-                    f'<a href="https://wa.me/?text={msg}" target="_blank"><button style="width:100%; background-color:#25D366; color:white; border:none; padding:12px; border-radius:10px; cursor:pointer; font-weight:bold;">📲 2. Enviar Link por WhatsApp</button></a>',
+                    f'<a href="{url_whatsapp}" target="_blank"><button style="width:100%; background-color:#25D366; color:white; border:none; padding:12px; border-radius:10px; cursor:pointer; font-weight:bold;">📲 2. Enviar Link por WhatsApp</button></a>',
                     unsafe_allow_html=True)
         else:
             st.error("La cédula ingresada no se encuentra en la base de datos.")
