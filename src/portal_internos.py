@@ -206,12 +206,14 @@ if st.button("Generar Código QR de Referido", use_container_width=True):
                 st.download_button("📥 1. Descargar QR", data=byte_im, file_name=f"Referido_Amazonas_{cedula_clean}.png",
                                    mime="image/png", use_container_width=True)
             with c2:
-                # Texto de WhatsApp optimizado para incluir adjunto manual
-                msg = urllib.parse.quote(
-                    f"¡Hola! Te invito a abrir tu Neo cuenta digital en Banco Amazonas.\n\n"
-                    f" ✅ Es rápido, seguro y 100% digital.\n"
-                    f" 📱 Puedes escanear la imagen que te adjunto o empezar directamente desde mi enlace seguro aquí:\n\n{url_referido}"
+                # Emojis codificados en formato universal (Unicode) para evitar rombos negros
+                msg_raw = (
+                    f"¡Hola! Te invito a abrir tu cuenta digital en Banco Amazonas.\n\n"
+                    f"\u2705 Es rápido, seguro y 100% digital.\n"
+                    f"\U0001F4F1 Puedes escanear la imagen que te adjunto o empezar directamente desde mi enlace seguro aquí:\n\n{url_referido}"
                 )
+                msg = urllib.parse.quote(msg_raw)
+                
                 st.markdown(
                     f'<a href="https://wa.me/?text={msg}" target="_blank"><button style="width:100%; background-color:#25D366; color:white; border:none; padding:12px; border-radius:10px; cursor:pointer; font-weight:bold;">📲 2. Enviar Link por WhatsApp</button></a>',
                     unsafe_allow_html=True)
