@@ -118,7 +118,6 @@ def generar_tarjeta_banner(data_colaborador, url_qr):
         font_footer = ImageFont.truetype(ruta_fuente, 40)
     except IOError:
         font_nombre = font_footer = ImageFont.load_default()
-        # Si ves este warning en tu app, significa que no has subido el arial.ttf a GitHub
         st.warning("⚠️ Recuerda subir el archivo 'arial.ttf' a la carpeta 'assets' en GitHub para mejorar la tipografía.")
 
     nombre = (data_colaborador['nombre'] or "Colaborador").title()
@@ -174,7 +173,7 @@ except:
     st.error("No se pudo conectar con la base de datos.")
     st.stop()
 
-cedula_user = st.text_input("Ingresa tu número de Cédula :", max_chars=10)
+cedula_user = st.text_input("Ingresa tu número de Cédula:", max_chars=10)
 
 if st.button("Generar Código QR de Referido", use_container_width=True):
     if cedula_user:
@@ -197,7 +196,7 @@ if st.button("Generar Código QR de Referido", use_container_width=True):
             img_tarjeta.save(buf, format="PNG", quality=95)
             byte_im = buf.getvalue()
 
-col_img1, col_img2, col_img3 = st.columns([1, 3, 1])
+            col_img1, col_img2, col_img3 = st.columns([1, 3, 1])
             with col_img2:
                 st.image(byte_im, use_container_width=True)
 
