@@ -241,7 +241,7 @@ if st.button("Generar Código QR de Referido", use_container_width=True):
                     celular_emoji = chr(128241)
 
                     mensaje = (
-                        f"¡Hola! Te invito a abrir tu cuenta digital en Banco Amazonas.\n\n"
+                        f"¡Hola! Te invito a abrir tu Neo cuenta digital en Banco Amazonas.\n\n"
                         f"{check_emoji} Es rápido, seguro y 100% digital.\n"
                         f"{celular_emoji} Puedes escanear la imagen que te adjunto o empezar directamente desde mi enlace seguro aquí:\n\n"
                         f"{url_referido}"
