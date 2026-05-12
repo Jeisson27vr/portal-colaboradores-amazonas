@@ -1,4 +1,4 @@
-﻿import streamlit as st
+import streamlit as st
 import pandas as pd
 import qrcode
 from PIL import Image, ImageDraw, ImageFont, ImageOps
@@ -10,6 +10,7 @@ import urllib.parse
 # Configuración de estética superior
 st.set_page_config(page_title="Referidos Banco Amazonas", page_icon="🏦", layout="centered")
 
+# Ocultar elementos nativos de Streamlit para una experiencia de marca limpia
 st.markdown("""
     <style>
     #MainMenu {visibility: hidden;}
@@ -38,13 +39,40 @@ def extraer_dato_flexible(fila, posibles_columnas):
     return None
 
 
+def validar_cedula_ecuatoriana(cedula):
+    if len(cedula) != 10 or not cedula.isdigit():
+        return False
+    provincia = int(cedula[0:2])
+    if provincia < 1 or provincia > 24:
+        return False
+    tercer_digito = int(cedula[2])
+    if tercer_digito >= 6:
+        return False
+
+    suma = 0
+    for i in range(9):
+        digito = int(cedula[i])
+        if i % 2 == 0:  # Posiciones impares
+            digito *= 2
+            if digito > 9:
+                digito -= 9
+        suma += digito
+
+    decena_superior = ((suma + 9) // 10) * 10
+    verificador_calculado = decena_superior - suma
+    if verificador_calculado == 10:
+        verificador_calculado = 0
+
+    return verificador_calculado == int(cedula[9])
+
+
 def generar_tarjeta_banner(data_colaborador, url_qr):
     ancho_card = 1000
     color_fondo = (255, 255, 255)
     color_amazonas = (211, 47, 47)
     color_texto_principal = (30, 30, 30)
 
-    # 1. CARGAMOS Y MEDIMOS EL BANNER
+    # 1. CARGAMOS EL BANNER
     ruta_assets = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'assets')
     banner_expandido = None
     alto_banner = 320
@@ -69,9 +97,9 @@ def generar_tarjeta_banner(data_colaborador, url_qr):
 
     # 3. CÁLCULO DEL LIENZO
     margen_superior_qr = 70
-    margen_inferior_qr = 40
-    espacio_textos = 200  # Más espacio para que la letra grande respire
-    margen_base = 50
+    margen_inferior_qr = 50
+    espacio_textos = 200
+    margen_base = 60
 
     alto_card = alto_banner + margen_superior_qr + qr_h + margen_inferior_qr + espacio_textos + margen_base
 
@@ -83,7 +111,7 @@ def generar_tarjeta_banner(data_colaborador, url_qr):
     else:
         draw.rectangle([0, 0, ancho_card, alto_banner], fill=color_amazonas)
 
-    # 4. INCRUSTAR LOGO CENTRAL EN EL QR
+    # 4. LOGO CENTRAL EN EL QR
     ruta_logo_qr = os.path.join(ruta_assets, 'logo_fondo.png')
     if os.path.exists(ruta_logo_qr):
         logo_img = Image.open(ruta_logo_qr).convert("RGBA")
@@ -92,12 +120,8 @@ def generar_tarjeta_banner(data_colaborador, url_qr):
 
         max_logo_size = size_cuadro - 30
         logo_ratio = logo_img.height / logo_img.width
-        if logo_img.width > logo_img.height:
-            logo_w = max_logo_size
-            logo_h = int(max_logo_size * logo_ratio)
-        else:
-            logo_h = max_logo_size
-            logo_w = int(max_logo_size / logo_ratio)
+        logo_w = max_logo_size if logo_img.width > logo_img.height else int(max_logo_size / logo_ratio)
+        logo_h = int(max_logo_size * logo_ratio) if logo_img.width > logo_img.height else max_logo_size
 
         logo_para_qr = logo_img.resize((logo_w, logo_h), Image.Resampling.LANCZOS)
         fondo_blanco.paste(logo_para_qr, ((size_cuadro - logo_w) // 2, (size_cuadro - logo_h) // 2), logo_para_qr)
@@ -105,23 +129,21 @@ def generar_tarjeta_banner(data_colaborador, url_qr):
         pos_centro_exacto = (qr_w - size_cuadro) // 2
         img_qr.paste(fondo_blanco, (pos_centro_exacto, pos_centro_exacto), fondo_blanco)
 
-    # 5. POSICIONAR EL QR
+    # 5. POSICIONAR QR
     pos_qr_y = alto_banner + margen_superior_qr
     pos_qr_x = (ancho_card - qr_w) // 2
     draw.rectangle([pos_qr_x - 3, pos_qr_y - 3, pos_qr_x + qr_w + 3, pos_qr_y + qr_h + 3], outline=(230, 230, 230),
                    width=3)
     card.paste(img_qr, (pos_qr_x, pos_qr_y), img_qr)
 
-    # 6. TEXTOS (Ahora buscando la fuente en la carpeta assets)
+    # 6. TEXTOS (Uso de arial.ttf en assets para evitar fuentes genéricas pequeñas)
     ruta_fuente = os.path.join(ruta_assets, 'arial.ttf')
     try:
-        # Tamaños corporativos legibles sin ser exagerados
-        font_nombre = ImageFont.truetype(ruta_fuente, 65)
-        font_footer = ImageFont.truetype(ruta_fuente, 40)
+        font_nombre = ImageFont.truetype(ruta_fuente, 60)
+        font_footer = ImageFont.truetype(ruta_fuente, 35)
     except IOError:
         font_nombre = font_footer = ImageFont.load_default()
-        st.warning(
-            "⚠️ Recuerda subir el archivo 'arial.ttf' a la carpeta 'assets' en GitHub para mejorar la tipografía.")
+        st.warning("⚠️ Sube 'arial.ttf' a la carpeta 'assets' en GitHub para mejorar la tipografía.")
 
     nombre = (data_colaborador['nombre'] or "Colaborador").title()
 
@@ -133,7 +155,7 @@ def generar_tarjeta_banner(data_colaborador, url_qr):
     escribir_centrado(base_textos_y, nombre, font_nombre, color_texto_principal)
     escribir_centrado(base_textos_y + 80, f"ID Referido: {data_colaborador['cedula']}", font_footer, (150, 150, 150))
 
-    # 7. REDONDEADO PERFECTO
+    # 7. REDONDEO Y FONDO FINAL
     mask = Image.new('L', (ancho_card, alto_card), 0)
     ImageDraw.Draw(mask).rounded_rectangle((0, 0, ancho_card, alto_card), radius=40, fill=255)
     card.putalpha(mask)
@@ -173,7 +195,7 @@ try:
     data = cargar_inventario()
     col_id = next((c for c in ['IDENTIFICACION', 'CEDULA', 'CODIGO_USUARIO'] if c in data.columns), None)
 except:
-    st.error("No se pudo conectar con la base de datos.")
+    st.error("Error al conectar con la base de datos.")
     st.stop()
 
 cedula_user = st.text_input("Ingresa tu número de Cédula:", max_chars=10)
@@ -181,53 +203,57 @@ cedula_user = st.text_input("Ingresa tu número de Cédula:", max_chars=10)
 if st.button("Generar Código QR de Referido", use_container_width=True):
     if cedula_user:
         cedula_clean = str(cedula_user).strip().zfill(10)
-        user_match = data[data[col_id].astype(str).str.strip().str.zfill(10) == cedula_clean]
 
-        if not user_match.empty:
-            fila = user_match.iloc[0]
-            nombre_full = extraer_dato_flexible(fila, ['NOMBRE', 'NOMBRES', 'NOMBRE APELLIDO', 'NOMBRES Y APELLIDOS'])
-
-            primer_nombre = nombre_full.split()[0] if nombre_full else "Colaborador"
-            st.success(f"¡Hola {primer_nombre}! Tu Código QR ha sido generado con éxito.")
-
-            url_referido = f"https://jeisson27vr.github.io/apertura-digital-amazonas/?oficial={cedula_clean}"
-
-            with st.spinner("Creando diseño de alta resolución..."):
-                img_tarjeta = generar_tarjeta_banner({'nombre': nombre_full, 'cedula': cedula_clean}, url_referido)
-
-            buf = io.BytesIO()
-            img_tarjeta.save(buf, format="PNG", quality=95)
-            byte_im = buf.getvalue()
-
-            col_img1, col_img2, col_img3 = st.columns([1, 3, 1])
-            with col_img2:
-                st.image(byte_im, use_container_width=True)
-
-            c1, c2 = st.columns(2)
-            with c1:
-                st.download_button("📥 1. Descargar QR", data=byte_im, file_name=f"Referido_Amazonas_{cedula_clean}.png",
-                                   mime="image/png", use_container_width=True)
-            with c2:
-                # Generamos los emojis desde su código de sistema (Bypass total a los archivos de texto)
-                check_emoji = chr(9989)
-                celular_emoji = chr(128241)
-                
-                # Armamos el mensaje limpio
-                mensaje = (
-                    f"¡Hola! Te invito a abrir tu cuenta digital en Banco Amazonas.\n\n"
-                    f"{check_emoji} Es rápido, seguro y 100% digital.\n"
-                    f"{celular_emoji} Puedes escanear la imagen que te adjunto o empezar directamente desde mi enlace seguro aquí:\n\n"
-                    f"{url_referido}"
-                )
-                
-                # Empaquetamos todo con la librería oficial y apuntamos a la API directa (No wa.me)
-                parametros_url = urllib.parse.urlencode({'text': mensaje})
-                url_whatsapp = f"https://api.whatsapp.com/send?{parametros_url}"
-                
-                st.markdown(
-                    f'<a href="{url_whatsapp}" target="_blank"><button style="width:100%; background-color:#25D366; color:white; border:none; padding:12px; border-radius:10px; cursor:pointer; font-weight:bold;">📲 2. Enviar Link por WhatsApp</button></a>',
-                    unsafe_allow_html=True)
+        # Blindaje matemático de cédula
+        if not validar_cedula_ecuatoriana(cedula_clean):
+            st.error("❌ La cédula ingresada no es válida. Por favor, revísala.")
         else:
-            st.error("La cédula ingresada no se encuentra en la base de datos.")
+            user_match = data[data[col_id].astype(str).str.strip().str.zfill(10) == cedula_clean]
+
+            if not user_match.empty:
+                fila = user_match.iloc[0]
+                nombre_full = extraer_dato_flexible(fila,
+                                                    ['NOMBRE', 'NOMBRES', 'NOMBRE APELLIDO', 'NOMBRES Y APELLIDOS'])
+                primer_nombre = nombre_full.split()[0] if nombre_full else "Colaborador"
+
+                st.success(f"¡Hola {primer_nombre}! Tu material ha sido generado con éxito.")
+                url_referido = f"https://jeisson27vr.github.io/apertura-digital-amazonas/?oficial={cedula_clean}"
+
+                with st.spinner("Diseñando material de alta resolución..."):
+                    img_tarjeta = generar_tarjeta_banner({'nombre': nombre_full, 'cedula': cedula_clean}, url_referido)
+
+                buf = io.BytesIO()
+                img_tarjeta.save(buf, format="PNG", quality=95)
+                byte_im = buf.getvalue()
+
+                col_img1, col_img2, col_img3 = st.columns([1, 3, 1])
+                with col_img2:
+                    st.image(byte_im, use_container_width=True)
+
+                c1, c2 = st.columns(2)
+                with c1:
+                    st.download_button("📥 1. Descargar QR", data=byte_im,
+                                       file_name=f"Referido_Amazonas_{cedula_clean}.png", mime="image/png",
+                                       use_container_width=True)
+                with c2:
+                    # Emojis via códigos Unicode para evitar problemas de encoding
+                    check_emoji = chr(9989)
+                    celular_emoji = chr(128241)
+
+                    mensaje = (
+                        f"¡Hola! Te invito a abrir tu cuenta digital en Banco Amazonas.\n\n"
+                        f"{check_emoji} Es rápido, seguro y 100% digital.\n"
+                        f"{celular_emoji} Puedes escanear la imagen que te adjunto o empezar directamente desde mi enlace seguro aquí:\n\n"
+                        f"{url_referido}"
+                    )
+
+                    parametros_url = urllib.parse.urlencode({'text': mensaje})
+                    url_whatsapp = f"https://api.whatsapp.com/send?{parametros_url}"
+
+                    st.markdown(
+                        f'<a href="{url_whatsapp}" target="_blank"><button style="width:100%; background-color:#25D366; color:white; border:none; padding:12px; border-radius:10px; cursor:pointer; font-weight:bold;">📲 2. Enviar Link por WhatsApp</button></a>',
+                        unsafe_allow_html=True)
+            else:
+                st.error("Cédula no encontrada en el inventario de colaboradores.")
     else:
-        st.warning("Por favor, ingresa tu número de cédula.")
+        st.warning("Por favor, ingresa un número de cédula.")
