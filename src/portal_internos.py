@@ -197,7 +197,7 @@ if st.button("Generar Código QR de Referido", use_container_width=True):
             img_tarjeta.save(buf, format="PNG", quality=95)
             byte_im = buf.getvalue()
 
-            col_img1, col_img2, col_img3 = st.columns([1, 3, 1])
+col_img1, col_img2, col_img3 = st.columns([1, 3, 1])
             with col_img2:
                 st.image(byte_im, use_container_width=True)
 
@@ -205,7 +205,7 @@ if st.button("Generar Código QR de Referido", use_container_width=True):
             with c1:
                 st.download_button("📥 1. Descargar QR", data=byte_im, file_name=f"Referido_Amazonas_{cedula_clean}.png",
                                    mime="image/png", use_container_width=True)
-        with c2:
+            with c2:
                 # Texto 100% pre-codificado matemáticamente (Bypass total a los rombos negros)
                 texto_base = "%C2%A1Hola%21%20Te%20invito%20a%20abrir%20tu%20cuenta%20digital%20en%20Banco%20Amazonas.%0A%0A%E2%9C%85%20Es%20r%C3%A1pido%2C%20seguro%20y%20100%25%20digital.%0A%F0%9F%93%B1%20Puedes%20escanear%20la%20imagen%20que%20te%20adjunto%20o%20empezar%20directamente%20desde%20mi%20enlace%20seguro%20aqu%C3%AD%3A%0A%0A"
                 
