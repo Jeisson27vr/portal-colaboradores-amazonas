@@ -155,7 +155,7 @@ def generar_tarjeta_banner(data_colaborador, url_qr):
     escribir_centrado(base_textos_y + 80, f"ID Referido: {data_colaborador['cedula']}", font_footer, (150, 150, 150))
     
     # Marca de agua de Ventura Data Solutions en la imagen
-    escribir_centrado(alto_card - 35, "Desarrollado por Jeisson Ventura", font_firma, (200, 200, 200))
+    escribir_centrado(alto_card - 35, "Desarrollado por Jeisson Ventura | Banco Amazonas", font_firma, (200, 200, 200))
 
     # 7. REDONDEO Y FONDO FINAL
     mask = Image.new('L', (ancho_card, alto_card), 0)
@@ -257,4 +257,4 @@ if st.button("Generar Código QR de Referido", use_container_width=True):
 
 # Footer Minimalista de Ventura Data Solutions
 st.write("---")
-st.markdown("<p style='text-align: center; color: #888888; font-size: 12px;'>Diseñado por Jeisson Ventura 🚀</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #888888; font-size: 12px;'>Diseñado por Jeisson Ventura | Banco Amazonas 🚀</p>", unsafe_allow_html=True)
