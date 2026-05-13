@@ -254,6 +254,6 @@ if st.button("Generar Código QR de Referido", use_container_width=True):
                         f'<a href="{url_whatsapp}" target="_blank"><button style="width:100%; background-color:#25D366; color:white; border:none; padding:12px; border-radius:10px; cursor:pointer; font-weight:bold;">📲 2. Enviar Link por WhatsApp</button></a>',
                         unsafe_allow_html=True)
             else:
-                st.error("Cédula no encontrada en el inventario de colaboradores.")
+                st.error("Cédula no encontrada en la base de datos.")
     else:
         st.warning("Por favor, ingresa un número de cédula.")
