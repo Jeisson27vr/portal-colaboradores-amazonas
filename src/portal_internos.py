@@ -257,4 +257,4 @@ if st.button("Generar Código QR de Referido", use_container_width=True):
 
 # Footer Minimalista de Ventura Data Solutions
 st.write("---")
-st.markdown("<p style='text-align: center; color: #888888; font-size: 12px;'>Engineered by Ventura Data Solutions 🚀</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #888888; font-size: 12px;'>Diseñado por Jeisson Ventura 🚀</p>", unsafe_allow_html=True)
