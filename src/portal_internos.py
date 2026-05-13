@@ -79,8 +79,7 @@ def generar_tarjeta_banner(data_colaborador, url_qr):
 
     if os.path.exists(ruta_assets):
         imagenes_banner = [f for f in os.listdir(ruta_assets) if
-                           f.lower().endswith(('.png', '.jpg', '.jpeg')) and f.lower() not in ['logo_fondo.png',
-                                                                                               'arial.ttf']]
+                           f.lower().endswith(('.png', '.jpg', '.jpeg')) and f.lower() not in ['logo_fondo.png', 'arial.ttf']]
         if imagenes_banner:
             ruta_banner = os.path.join(ruta_assets, imagenes_banner[0])
             banner_orig = Image.open(ruta_banner).convert("RGBA")
@@ -132,19 +131,19 @@ def generar_tarjeta_banner(data_colaborador, url_qr):
     # 5. POSICIONAR QR
     pos_qr_y = alto_banner + margen_superior_qr
     pos_qr_x = (ancho_card - qr_w) // 2
-    draw.rectangle([pos_qr_x - 3, pos_qr_y - 3, pos_qr_x + qr_w + 3, pos_qr_y + qr_h + 3], outline=(230, 230, 230),
-                   width=3)
+    draw.rectangle([pos_qr_x - 3, pos_qr_y - 3, pos_qr_x + qr_w + 3, pos_qr_y + qr_h + 3], outline=(230, 230, 230), width=3)
     card.paste(img_qr, (pos_qr_x, pos_qr_y), img_qr)
 
-    # 6. TEXTOS (Uso de arial.ttf en assets para evitar fuentes genéricas pequeñas)
+    # 6. TEXTOS E INTEGRACIÓN DE FIRMA
     ruta_fuente = os.path.join(ruta_assets, 'arial.ttf')
     try:
         font_nombre = ImageFont.truetype(ruta_fuente, 60)
         font_footer = ImageFont.truetype(ruta_fuente, 35)
+        font_firma = ImageFont.truetype(ruta_fuente, 18)
     except IOError:
-        font_nombre = font_footer = ImageFont.load_default()
+        font_nombre = font_footer = font_firma = ImageFont.load_default()
         st.warning("⚠️ Sube 'arial.ttf' a la carpeta 'assets' en GitHub para mejorar la tipografía.")
-
+        
     nombre = (data_colaborador['nombre'] or "Colaborador").title()
 
     def escribir_centrado(y, texto, fuente, color):
@@ -154,6 +153,9 @@ def generar_tarjeta_banner(data_colaborador, url_qr):
     base_textos_y = pos_qr_y + qr_h + margen_inferior_qr
     escribir_centrado(base_textos_y, nombre, font_nombre, color_texto_principal)
     escribir_centrado(base_textos_y + 80, f"ID Referido: {data_colaborador['cedula']}", font_footer, (150, 150, 150))
+    
+    # Marca de agua de Ventura Data Solutions en la imagen
+    escribir_centrado(alto_card - 35, "Powered by Ventura Data Solutions", font_firma, (200, 200, 200))
 
     # 7. REDONDEO Y FONDO FINAL
     mask = Image.new('L', (ancho_card, alto_card), 0)
@@ -186,9 +188,7 @@ if os.path.exists(ruta_assets):
             st.image(os.path.join(ruta_assets, imagenes[0]), use_container_width=True)
 
 st.markdown("<h2 style='text-align: center;'>Portal de Referidos Digitales</h2>", unsafe_allow_html=True)
-st.markdown(
-    "<p style='text-align: center;'>Genera tu QR personalizado para invitar a clientes a la Neo Cuenta Digital.</p>",
-    unsafe_allow_html=True)
+st.markdown("<p style='text-align: center;'>Genera tu QR personalizado para invitar a clientes a la Neo Cuenta Digital.</p>", unsafe_allow_html=True)
 st.write("---")
 
 try:
@@ -212,8 +212,7 @@ if st.button("Generar Código QR de Referido", use_container_width=True):
 
             if not user_match.empty:
                 fila = user_match.iloc[0]
-                nombre_full = extraer_dato_flexible(fila,
-                                                    ['NOMBRE', 'NOMBRES', 'NOMBRE APELLIDO', 'NOMBRES Y APELLIDOS'])
+                nombre_full = extraer_dato_flexible(fila, ['NOMBRE', 'NOMBRES', 'NOMBRE APELLIDO', 'NOMBRES Y APELLIDOS'])
                 primer_nombre = nombre_full.split()[0] if nombre_full else "Colaborador"
 
                 st.success(f"¡Hola {primer_nombre}! Tu Código QR ha sido generado con éxito.")
@@ -232,9 +231,7 @@ if st.button("Generar Código QR de Referido", use_container_width=True):
 
                 c1, c2 = st.columns(2)
                 with c1:
-                    st.download_button("📥 1. Descargar QR", data=byte_im,
-                                       file_name=f"Referido_Amazonas_{cedula_clean}.png", mime="image/png",
-                                       use_container_width=True)
+                    st.download_button("📥 1. Descargar QR", data=byte_im, file_name=f"Referido_Amazonas_{cedula_clean}.png", mime="image/png", use_container_width=True)
                 with c2:
                     # Emojis via códigos Unicode para evitar problemas de encoding
                     check_emoji = chr(9989)
@@ -257,3 +254,7 @@ if st.button("Generar Código QR de Referido", use_container_width=True):
                 st.error("Cédula no encontrada en la base de datos.")
     else:
         st.warning("Por favor, ingresa un número de cédula.")
+
+# Footer Minimalista de Ventura Data Solutions
+st.write("---")
+st.markdown("<p style='text-align: center; color: #888888; font-size: 12px;'>Engineered by Ventura Data Solutions 🚀</p>", unsafe_allow_html=True)
